@@ -1,3 +1,8 @@
 parsefile/venv
 parsefile/deploy.sh
 parsefile/dummy.pdf
+
+backend/venv
+backend/.env
+
+frontend/node_modules
