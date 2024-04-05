@@ -1,36 +1,69 @@
-import React, { useState } from 'react';
-import axios from 'axios';
+import React, { useState, useRef, useEffect } from "react";
+import { FiSend } from "react-icons/fi";
 
-const ChatBar: React.FC = () => {
-  const [message, setMessage] = useState('');
-  const [response, setResponse] = useState('');
+interface Message {
+    text: string;
+    sender: "You" | "Richie" | "Timmy";
+}
 
-  const handleMessageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setMessage(event.target.value);
-  };
+interface ChatBarProps {
+    onSendMessage: (message: string) => void;
+    messages: Message[];
+}
 
-  const handleSendMessage = async () => {
-    try {
-      console.log(message)
-      const { data } = await axios.post('http://localhost:8000/chat', { message });
-      setResponse(data.response);
-    } catch (error) {
-      console.error('Error sending message:', error);
-    }
-  };
+const ChatBar: React.FC<ChatBarProps> = ({ onSendMessage }) => {
+    const [message, setMessage] = useState("");
+    const [messages, setMessages] = useState<Message[]>([]);
+    const chatContainerRef = useRef<HTMLDivElement>(null);
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  return (
-    <div>
-      <input
-        type="text"
-        value={message}
-        onChange={handleMessageChange}
-        placeholder="Type your message..."
-      />
-      <button onClick={handleSendMessage}>Send</button>
-      <p>Response: {response}</p>
-    </div>
-  );
+    const handleMessageChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+        setMessage(event.target.value);
+    };
+
+    const handleSendMessage = () => {
+        if (message.trim() !== "") {
+            onSendMessage(message);
+            setMessage("");
+        }
+    };
+
+    const handleKeyPress = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+        if (event.key === "Enter" && !event.shiftKey) {
+            event.preventDefault();
+            handleSendMessage();
+        }
+    };
+
+    useEffect(() => {
+        if (chatContainerRef.current) {
+            chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+        }
+    }, [messages]);
+
+    useEffect(() => {
+        if (textareaRef.current) {
+            textareaRef.current.style.height = "auto";
+            textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+        }
+    }, [message]);
+
+    return (
+        <>
+            <textarea
+                ref={textareaRef}
+                value={message}
+                onChange={handleMessageChange}
+                onKeyPress={handleKeyPress}
+                placeholder="Type your message..."
+                className="flex-1 p-2 border-none rounded-md mr-2 resize-none"
+                rows={1}
+            />
+            <button onClick={handleSendMessage} className="btn cursor-pointer">
+                <FiSend size={20} />
+            </button>
+        </>
+    );
 };
 
 export default ChatBar;

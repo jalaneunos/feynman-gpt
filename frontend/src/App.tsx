@@ -1,14 +1,18 @@
 import React from 'react';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import UploadButton from './UploadButton';
-import ChatBar from './Chatbar';
+import LearningPage from './LearningPage';
 
 const App: React.FC = () => {
   return (
-    <div>
-      <h1>My App</h1>
-      <UploadButton />
-      <ChatBar />
-    </div>
+    <Router>
+      <div>
+        <Routes>
+          <Route path="/" element={<UploadButton />} />
+          <Route path="/learning" element={<LearningPage />} />
+        </Routes>
+      </div>
+    </Router>
   );
 };
 
