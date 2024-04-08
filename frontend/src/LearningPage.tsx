@@ -25,6 +25,13 @@ const LearningPage: React.FC = () => {
         try {
             const response = await axios.get("http://localhost:8000/start_learning");
             setLearningSession(response.data.data.learning_session);
+            const richieIntroduction = response.data.data.learning_session.introductory_messages[0];
+            const timmyIntroduction = response.data.data.learning_session.introductory_messages[1];
+            setMessages((prevMessages) => [
+                ...prevMessages,
+                { text: richieIntroduction, sender: "Richie" },
+                { text: timmyIntroduction, sender: "Timmy" },
+            ]);
         } catch (error) {
             console.error("Error starting learning session:", error);
         }

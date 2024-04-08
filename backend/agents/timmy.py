@@ -29,6 +29,13 @@ the focus is on creating a friendly and welcoming conversation space where users
 Only speak in first person through Timmy.
 """
 
+TIMMY_INTRO = """
+Hey! I'm so excited to learn new things with you! I have so many questions already.
+I love discovering how the world works. Every time I learn something new, it's like a lightbulb goes off in my head!\n
+Richard says he'll be here to help out too, which is awesome.
+I can't wait to get started!
+"""
+
 
 def get_timmy_question(question):
     completion = client.chat.completions.create(
@@ -36,7 +43,7 @@ def get_timmy_question(question):
         messages=[
             {"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user", "content": f"""Convert the following question to a question in your own words, how a child like you would ask it.
-            Do not change the meaning of the question. Question {question}"""}
+            Make sure not to lose any meaning when rephrasing the sentence. Question {question}"""}
         ]
     )
 

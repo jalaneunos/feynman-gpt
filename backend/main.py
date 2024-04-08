@@ -10,8 +10,8 @@ from dotenv import load_dotenv
 from llama_index.llms.openai import OpenAI
 from pydantic import BaseModel
 from agents.grader import grade_answer, generate_questions, generate_title
-from agents.richie import get_richie_guidance
-from agents.timmy import get_timmy_question, get_timmy_response
+from agents.richie import get_richie_guidance, RICHIE_INTRO
+from agents.timmy import get_timmy_question, get_timmy_response, TIMMY_INTRO
 import tempfile
 import os
 import openai
@@ -88,7 +88,8 @@ async def start_learning():
         "title": title,
         "current_question_index": 0,
         "total_questions": len(questions),
-        "questions": questions
+        "questions": questions,
+        "introductory_messages": [RICHIE_INTRO, TIMMY_INTRO]
     }
     return Response(status="success", message="Learning session started", data={"learning_session": learning_session})
 
@@ -130,6 +131,6 @@ async def answer(request: AnswerRequest):
         richie_response = get_richie_guidance(question, user_answer, correct_answer)
         return Response(
             status="error",
-            message="Unsatisfactory answer. Here's some guidance from Richie:",
+            message="Hmm...that's not quite right.",
             data={"guidance": richie_response, "question_index": question_index}
         )

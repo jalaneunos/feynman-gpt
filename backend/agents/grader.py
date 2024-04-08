@@ -34,7 +34,6 @@ def generate_title(chat_engine):
 
 
 def generate_questions(chat_engine, query_engine):
-
     response = few_shot_prompt(initial_prompt, chat_engine)
     questions = []
     for line in response.strip().split("\n"):
