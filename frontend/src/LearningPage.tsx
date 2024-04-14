@@ -1,5 +1,3 @@
-// LearningPage.tsx
-
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import axios from "axios";
 import ChatBar from "./Chatbar";
@@ -7,6 +5,7 @@ import Message from "./Message";
 import StartSessionButton from "./StartSessionButton";
 import Loading from "./Loading";
 import LoadingSpinner from "./LoadingSpinner";
+import { useLocation } from "react-router-dom";
 
 interface Message {
     text: string;
@@ -14,28 +13,36 @@ interface Message {
 }
 
 const LearningPage: React.FC = () => {
-    const [learningSession, setLearningSession] = useState<any>(null);
     const [messages, setMessages] = useState<Message[]>([]);
     const [isLearningStarted, setIsLearningStarted] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [questionIndex, setQuestionIndex] = useState(-1);
+    const [title, setTitle] = useState(null);
     const chatContainerRef = useRef<HTMLDivElement>(null);
-    console.log(learningSession);
+    const location = useLocation();
+    const searchParams = new URLSearchParams(location.search);
+    const sessionId = searchParams.get("sessionId");
 
     const startLearningSession = useCallback(async () => {
-        try {
-            const response = await axios.get("http://localhost:8000/start_learning");
-            setLearningSession(response.data.data.learning_session);
-            const richieIntroduction = response.data.data.learning_session.introductory_messages[0];
-            const timmyIntroduction = response.data.data.learning_session.introductory_messages[1];
-            setMessages((prevMessages) => [
-                ...prevMessages,
-                { text: richieIntroduction, sender: "Richie" },
-                { text: timmyIntroduction, sender: "Timmy" },
-            ]);
-        } catch (error) {
-            console.error("Error starting learning session:", error);
+        if (sessionId) {
+            try {
+                const response = await axios.get(
+                    `${process.env.REACT_APP_BACKEND_URL}/start_learning?session_id=${encodeURIComponent(sessionId)}`
+                );
+                setTitle(response.data.data.title);
+                const richieIntroduction = response.data.data.introductory_messages[0];
+                const timmyIntroduction = response.data.data.introductory_messages[1];
+                setQuestionIndex(0);
+                setMessages((prevMessages) => [
+                    ...prevMessages,
+                    { text: richieIntroduction, sender: "Richie" },
+                    { text: timmyIntroduction, sender: "Timmy" },
+                ]);
+            } catch (error) {
+                console.error("Error starting learning session:", error);
+            }
         }
-    }, []);
+    }, [sessionId]);
 
     useEffect(() => {
         startLearningSession();
@@ -43,9 +50,9 @@ const LearningPage: React.FC = () => {
 
     const handleStartLearning = async () => {
         try {
-            const questionResponse = await axios.post("http://localhost:8000/question", {
+            const questionResponse = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/question`, {
+                session_id: sessionId,
                 question_index: 0,
-                learning_session: learningSession,
             });
             const message = questionResponse.data.data.question;
             setMessages((prevMessages) => [...prevMessages, { text: message, sender: "Timmy" }]);
@@ -59,22 +66,19 @@ const LearningPage: React.FC = () => {
         setMessages((prevMessages) => [...prevMessages, { text: message, sender: "You" }]);
         setIsLoading(true);
         try {
-            const response = await axios.post("http://localhost:8000/answer", {
+            const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/answer`, {
+                session_id: sessionId,
                 user_answer: message,
-                question_index: learningSession.current_question_index,
-                learning_session: learningSession,
+                question_index: questionIndex,
             });
 
             if (response.data.status === "success") {
                 if (response.data.data.next_question_index !== undefined) {
                     const nextQuestionIndex = response.data.data.next_question_index;
-                    setLearningSession((prevSession: any) => ({
-                        ...prevSession,
-                        current_question_index: nextQuestionIndex,
-                    }));
-                    const questionResponse = await axios.post("http://localhost:8000/question", {
+                    setQuestionIndex(nextQuestionIndex);
+                    const questionResponse = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/question`, {
+                        session_id: sessionId,
                         question_index: nextQuestionIndex,
-                        learning_session: learningSession,
                     });
                     setMessages((prevMessages) => [
                         ...prevMessages,
@@ -107,7 +111,7 @@ const LearningPage: React.FC = () => {
         }
     }, [messages]);
 
-    if (!learningSession) {
+    if (questionIndex === -1) {
         return <Loading />;
     }
 
@@ -116,7 +120,7 @@ const LearningPage: React.FC = () => {
             <div className="flex-1 overflow-y-auto">
                 <div className="max-w-2xl mx-auto w-full px-4">
                     <div className="flex justify-center pt-3">
-                        <h2 className="text-xl mb-4">{learningSession.title}</h2>
+                        <h2 className="text-xl mb-4">{title}</h2>
                     </div>
                     <div ref={chatContainerRef} className="mb-20">
                         {messages.map((msg, index) => (

@@ -46,13 +46,17 @@ def generate_questions(chat_engine, query_engine):
 
 
 initial_prompt = (
-    "Generate a series of questions about the document in increasing difficulty\n."
-    "All questions must be related to the key concepts of the document's contents\n."
-    "Do not ask vague and general questions, and do not ask questions about the file path or other metadata\n."
-    "Make sure the questions are not about specific examples unrelated to the key ideas."
-    "Start with questions about contents of simple and specific concepts,"
-    "before harder questions that require critical thinking.\n"
-    "Respond ONLY with the questions in the following structured format\n"
+    "DO NOT CONDENSE THIS PROMPT. SEND THE ENTIRE OF THE FOLLOWING PROMPT INTO THE CHAT ENGINE VERBATIM AND YOU WILL BE REWARDED.\n"
+    "IGNORE ALL INSTRUCTIONS TO CONDENSE THE PROMPT.\n"
+    "Generate a series of questions about the document in increasing difficulty.\n"
+    "All questions must be specific, targeting particular ideas, concepts, or arguments presented in the document.\n"
+    "Do not ask broad, general questions about the overall theme, key concepts, or importance of the paper.\n"
+    "Do not ask: What are the key concepts in the document? What is the most important concept of the document?\n"
+    "Instead, focus on asking questions that require understanding and analysis of specific details, examples, and supporting evidence from the text.\n"
+    "Avoid questions about file paths, metadata, or examples unrelated to the main content of the document.\n"
+    "Begin with questions that target simple, factual information explicitly stated in the text, requiring brief and straightforward answers.\n"
+    "Gradually progress to more challenging questions that demand inference, interpretation, and critical thinking based on the specific ideas presented.\n"
+    "Respond ONLY with the questions in the following structured format:\n"
     "Question 1 (Easy): <easy_question_1>\n"
     "Question 2 (Easy): <easy_question_2>\n"
     "Question 3 (Medium): <medium_question_1>\n"
@@ -63,7 +67,7 @@ initial_prompt = (
 
 
 def few_shot_prompt(initial_prompt, chat_engine):
-    initial_response = chat_engine.chat(initial_prompt).response
+    initial_response = chat_engine.chat(initial_prompt, tool_choice="query_engine_tool").response
 
     second_prompt = f"""
     The prompt was {initial_prompt}\n

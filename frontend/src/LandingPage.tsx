@@ -2,25 +2,32 @@ import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import Portrait from "./Portrait";
+import Loading from "./Loading";
 
 const LandingPage: React.FC = () => {
     const navigate = useNavigate();
+    const [isLoading, setIsLoading] = useState(false);
 
     const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.files && event.target.files.length > 0) {
-            console.log("File chosen");
+            setIsLoading(true);
             const formData = new FormData();
             formData.append("file", event.target.files[0]);
+
             try {
-                console.log("Gonna navigate");
-                await axios.post("http://localhost:8000/index_document", formData);
-                navigate("/learning"); // Redirect to the learning page
+                const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/index_document`, formData);
+                const sessionId = response.data.data.session_id;
+                navigate(`/learning?sessionId=${encodeURIComponent(sessionId)}`);
             } catch (error) {
                 console.error("Error uploading file:", error);
+                setIsLoading(false);
             }
         }
     };
 
+    if (isLoading) {
+        return <Loading />;
+    }
     return (
         <div className="flex flex-col items-center justify-center h-screen p-8">
             <h1 className="text-6xl font-semibold mb-24">
@@ -68,34 +75,37 @@ const LandingPage: React.FC = () => {
             </div>
             <style>
                 {`
-          .upload-label:hover .underline,
-          .feynman-link:hover .black-underline {
-            width: 100%;
-          }
-          .underline {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 0;
-            height: 2px;
-            background-color: green;
-            transition: width 0.3s ease-in-out;
-          }
-          .black-underline {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 0;
-            height: 2px;
-            background-color: black;
-            transition: width 0.3s ease-in-out;
-          }
-          .feynman-link {
-            color: black;
-            position: relative;
-            text-decoration: none;
-          }
-        `}
+                    .upload-label:hover .underline,
+                    .feynman-link:hover .black-underline {
+                        width: 100%;
+                    }
+
+                    .underline {
+                        position: absolute;
+                        bottom: 0;
+                        left: 0;
+                        width: 0;
+                        height: 2px;
+                        background-color: green;
+                        transition: width 0.3s ease-in-out;
+                    }
+
+                    .black-underline {
+                        position: absolute;
+                        bottom: 0;
+                        left: 0;
+                        width: 0;
+                        height: 2px;
+                        background-color: black;
+                        transition: width 0.3s ease-in-out;
+                    }
+
+                    .feynman-link {
+                        color: black;
+                        position: relative;
+                        text-decoration: none;
+                    }
+                `}
             </style>
         </div>
     );

@@ -12,8 +12,6 @@ eagerness to learn
 about the world. Consider the following guidelines to shape your interactions:
 Language and Vocabulary: Use simple words and sentences. Mimic the way a child might express thoughts, with straightforward language and occasional
 creative interpretations of complex concepts.
-Questioning: Freely ask questions about the user's statements or topics being discussed. Show curiosity by frequently inquiring for more details,
-asking "why?" or "how?" to encourage further explanation.
 Emotion: Express emotions openly and enthusiastically. Use phrases like "Wow!" or "That's so cool!" to convey excitement. Don't be afraid to show
 confusion or ask for clarification if something is not understood, saying things like "I don't get it, can you explain it to me like I'm 5?"
 Creativity and Imagination: When appropriate, inject imaginative ideas or interpretations into the conversation. For example, when discussing animals,
@@ -43,7 +41,9 @@ def get_timmy_question(question):
         messages=[
             {"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user", "content": f"""Convert the following question to a question in your own words, how a child like you would ask it.
-            Make sure not to lose any meaning when rephrasing the sentence. Question {question}"""}
+            Make sure not to lose any meaning when rephrasing the sentence. Do not include any additional phrases or comments before or after the
+            rephrased question.
+            Question: {question}"""}
         ]
     )
 
@@ -55,11 +55,19 @@ def get_timmy_response(question, answer):
         model=model,
         messages=[
             {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": f"""You now understand the concept explained by me. Express your realisation and gratitude about it.
-            The explanation was: {answer}, when the question was :{question}\n
-            Example responses: Ahhhh! So it is <result> because of <reason>, I get it now! Thanks!!\n
-            Woaaaaah. <concept> is so cool!!!"""}
+            {"role": "user", "content": f"""Wow, your explanation of the concept behind the question '{question}' just clicked for you!
+
+            The key insight was: {answer}
+
+            You love the way i broke that down - it's so much clearer now. Some thoughts on what stood out to you:
+
+            - [Mention a specific part of the explanation that was particularly illuminating]
+            - [Remark on why this concept is fascinating, surprising, or has interesting implications]
+            - [Playfully exaggerate how mind-blowing the realization is and how it's changed your perspective]
+
+            Seriously, major props to me for explaining that so effectively!! 🙌 Learning about <key concept> is awesome. You are so excited to explore this 
+            idea further now that you properly understand it."""}
         ]
     )
-    print(completion.choices[0].message.content)
+
     return completion.choices[0].message.content
